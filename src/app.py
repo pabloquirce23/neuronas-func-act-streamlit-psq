@@ -33,25 +33,40 @@ with col2:
    input_func = st.selectbox("Elige la función de activación", ("relu", "sigmoid", "tanh"))
 
 class Neuron:
-   def __init__(self, weights, bias, func):
-      self.weights = weights
-      self.bias = bias
-      self.func = func
+    def __init__(self, weights, bias, func):
+        self.weights = weights
+        self.bias = bias
+        self.func = func
 
-   def run(self, input_data):
-      result = sum(x * w for x, w in zip(input_data, self.weights)) + self.bias # operación de la neurona
+    @staticmethod
+    def __relu(result):
+        return max(0, result)
 
-      if self.func == "relu": # funciones de activación
-         return max(0, result)
-      elif self.func == "sigmoid":
-         return 1 / (1 + math.exp(-result))
-      elif self.func == "tanh":
-         return math.tanh(result)
-      else:
-         raise ValueError("Esta función de activación no es válida")
+    @staticmethod
+    def __sigmoid(result):
+        return 1 / (1 + math.exp(-result))
 
-   def change_bias(self, new_bias):
-      self.bias = new_bias
+    @staticmethod
+    def __tanh(result):
+        return math.tanh(result)
+
+    def run(self, input_data):
+        activation_function = getattr(Neuron, f"_Neuron__{self.func}", None)
+
+        if not callable(activation_function):
+            raise ValueError("Esta función de activación no es válida")
+
+        result = sum(x * w for x, w in zip(input_data, self.weights)) + self.bias
+        return activation_function(result)
+
+    def change_bias(self, new_bias):
+        self.bias = new_bias
+
+    def change_weights(self, new_weights):
+        if len(new_weights) == len(self.weights):
+            self.weights = new_weights
+        else:
+            raise ValueError("La longitud de la lista de pesos tiene que ser igual a la anterios")
 
 if st.button("Calcular la salida"):
    n1 = Neuron(weights_list, input_sesgo, input_func) # instancia de la neurona
